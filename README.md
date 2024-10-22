@@ -1,8 +1,14 @@
 # PhoneNumberKit
 Android **Kotlin** library to parse and format international phone numbers. Based on Google's libphonenumber library.
 
-[![](https://jitpack.io/v/ibrahimsn98/PhoneNumberKit.svg)](https://jitpack.io/#ibrahimsn98/PhoneNumberKit)
+[![](https://jitpack.io/v/KDVL/PhoneNumberKit.svg)](https://jitpack.io/#KDVL/PhoneNumberKit)
 
+
+## Disclamer
+
+- This is a forked project fixing "Austrian Phone Number Length <a href="https://github.com/ibrahimsn98/PhoneNumberKit/issues/14">#14</a>".
+- This forked repository will be deleted if the pull request <a href="https://github.com/ibrahimsn98/PhoneNumberKit/pull/39">#39</a> is accepted and merged.
+- Temporary version KDVL:2.0.7 can be used.
 
 ## Features
 
@@ -153,7 +159,7 @@ allprojects {
 Step 2. Add the dependency
 ```
 dependencies {
-    implementation 'com.github.ibrahimsn98:PhoneNumberKit:2.0.6'
+    implementation 'com.github.KDVL:PhoneNumberKit:2.0.7'
 }
 ```
 
