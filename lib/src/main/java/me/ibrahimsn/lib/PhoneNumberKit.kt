@@ -60,12 +60,12 @@ class PhoneNumberKit private constructor(
 
     private var textChangedListener: MaskedTextChangedListener? = null
 
-    private fun setupListener(editText: EditText, pattern: String) {
+    private fun setupListener(editText: EditText, pattern: String, otherPatterns: List<String>) {
         editText.removeTextChangedListener(textChangedListener)
         textChangedListener = installOn(
             editText,
             pattern,
-            emptyList(),
+            otherPatterns,
             AffinityCalculationStrategy.WHOLE_STRING,
             object : MaskedTextChangedListener.ValueListener {
                 override fun onTextChanged(
@@ -102,16 +102,49 @@ class PhoneNumberKit private constructor(
     }
 
     private fun setCountry(country: Country) {
-        val formattedNumber = proxy.formatPhoneNumber(
-            proxy.getExampleNumber(country.iso2)
-        )
+        val exampleNumber = proxy.getExampleNumber(country.iso2)
+        val formattedNumber = proxy.formatPhoneNumber(exampleNumber)
+
         val pattern = CountryPattern.create(
             formattedNumber.orEmpty()
         )
+
+        val patterns = findOtherPatterns(
+            formattedNumber.orEmpty(),
+            country.iso2
+        ).map {
+            CountryPattern.create(it)
+        }
+
         state.value = State.Attached(
             country = country,
-            pattern = pattern
+            pattern = pattern,
+            otherPatterns = patterns
         )
+    }
+
+    private fun findOtherPatterns(formattedNumber: String, iso2: String?): List<String> {
+        val validPatterns = mutableListOf<String>()
+        var testedNumber = formattedNumber
+
+        do {
+            testedNumber = testedNumber.dropLast(1)
+            val isValid = proxy.validateNumber(testedNumber, iso2)
+            if (isValid) {
+                validPatterns.add(testedNumber)
+            }
+        } while (isValid && testedNumber.isNotEmpty())
+
+        testedNumber = formattedNumber
+        do {
+            testedNumber += '0'
+            val isValid = proxy.validateNumber(testedNumber, iso2)
+            if (isValid) {
+                validPatterns.add(testedNumber)
+            }
+        } while (isValid && testedNumber.isNotEmpty())
+
+        return validPatterns
     }
 
     fun attachToInput(
@@ -157,7 +190,7 @@ class PhoneNumberKit private constructor(
                         }
                     }
                     input.get()?.editText?.let { editText ->
-                        setupListener(editText, state.pattern)
+                        setupListener(editText, state.pattern, state.otherPatterns)
                     }
                     if (inputValue.isNullOrEmpty()) {
                         inputValue = state.country.code.toString()
